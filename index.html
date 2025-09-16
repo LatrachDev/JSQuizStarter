@@ -35,7 +35,7 @@
       </div>
     </header>
 
-    <section class="hero">
+    <section class="hero" id="hero">
       <img class="shape shape-right" src="images/Group 1.svg" alt="">
       <img class="shape shape-left" src="images/Group 2.svg" alt="">
 
@@ -45,11 +45,74 @@
         Que vous soyez débutant ou expert, plongez dans une variété de quiz couvrant des sujets divers.</p>
 
         <div class="hero-buttons">
-          <button class="btn btn-primary">Get Started</button>
+          <button id="start" class="btn btn-primary">Get Started</button>
           <button class="btn btn-secondary">Learn More</button>
         </div>
       </div>
     </section>
+
+    <!-- Main Quiz Area -->
+    <main class="quiz-container" id="welcome">
+      <!-- Welcome Screen -->
+      <div id="welcome-screen" class="screen active">
+        <div class="welcome-content">
+          <h2>Welcome to JSQuizStarter!</h2>
+          <p>Test your knowledge with our interactive quiz. You'll have 12 questions to answer.</p>
+          <button id="start-btn" class="btn btn-primary">Start Quiz</button>
+        </div>
+      </div>
+    </main>
+    
+    <!-- Quiz Screen -->
+    <div id="quiz-screen" class="screen">
+      <div class="progress-bar">
+        <div id="progress" class="progress-fill"></div>
+      </div>
+      <div class="question-container">
+        <div class="question-number">
+          Question <span id="current-question">1</span> of <span id="total-questions">12</span>
+        </div>
+        <h2 id="question-text" class="question-text"></h2>
+        <div id="answers-container" class="answers-container"></div>
+        <div class="quiz-actions">
+          <button id="next-btn" class="btn btn-primary" disabled>Next Question</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results Screen -->
+    <div id="results-screen" class="screen">
+      <div class="results-content">
+        <h2>Quiz Complete!</h2>
+        <div class="score-display">
+          <div class="score-circle">
+            <span id="final-score">0</span>
+            <span class="score-total">/ 12</span>
+          </div>
+        </div>
+        <div id="feedback-message" class="feedback-message"></div>
+        <div class="time-display">
+          <span class="time-label">Time taken:</span>
+          <span id="final-time">00:00</span>
+        </div>
+        <div class="results-actions">
+          <button id="restart-btn" class="btn btn-secondary">Try Again</button>
+          <button id="review-btn" class="btn btn-primary">Review Answers</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Review Screen -->
+    <div id="review-screen" class="screen">
+      <div class="review-content">
+        <h2>Review Your Answers</h2>
+        <div id="review-container" class="review-container"></div>
+        <div class="review-actions">
+          <button id="back-to-results" class="btn btn-primary">Back to Results</button>
+        </div>
+      </div>
+    </div>
+
 
   </div>
 
