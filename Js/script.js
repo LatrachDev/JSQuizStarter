@@ -17,27 +17,33 @@ const welcomeScreen = document.getElementById("welcome-screen");
 const quizScreen = document.getElementById("quiz-screen");
 const resultsScreen = document.getElementById("results-screen");
 
-// Buttons
-const startBtn = document.getElementById("start"); 
-const startQuizBtn = document.getElementById("start-btn"); 
+// buttons
+const startBtn = document.getElementById("start");
+const startQuizBtn = document.getElementById("start-btn");
 const nextBtn = document.getElementById("next-btn");
+
+// Quiz elements
+const questionText = document.getElementById("question-text");
+const answersContainer = document.getElementById("answers-container");
+const currentQuestionSpan = document.getElementById("current-question");
+const totalQuestionsSpan = document.getElementById("total-questions");
+const progressFill = document.getElementById("progress");
 
 startBtn.addEventListener("click", () => {
     hero.style.display = "none";
     welcome.style.display = "flex";
-})
+});
 
 startQuizBtn.addEventListener("click", () => {
     welcome.style.display = "none";
     quizScreen.style.display = "block";
-})
+    startQuiz();
+});
 
-// Quiz state
 let currentQuestionIndex = 0;
 let score = 0;
 let selectedAnswer = null;
 
-// Define questions array
 const questions = [
   {
     question: "What does HTML stand for?",
@@ -135,7 +141,7 @@ const questions = [
       "'This is a comment",
       "<!--This is a comment-->",
       "//This is a comment",
-      "**This is a comment**"
+      "/*This is a comment*/"
     ],
     answer: 2
   },
@@ -161,3 +167,101 @@ const questions = [
   }
 ];
 
+function startQuiz() {
+    currentQuestionIndex = 0;
+    score = 0;
+    totalQuestionsSpan.textContent = questions.length;
+    displayQuestion();
+}
+
+function displayQuestion() {
+    const question = questions[currentQuestionIndex];
+    
+    // update question number and progress
+    currentQuestionSpan.textContent = currentQuestionIndex + 1;
+    const progressPercentage = ((currentQuestionIndex + 1) / questions.length) * 100;
+    progressFill.style.width = progressPercentage + '%';
+    
+    // display question text
+    questionText.textContent = question.question;
+    
+    // clear previous answers
+    answersContainer.innerHTML = '';
+    selectedAnswer = null;
+    nextBtn.disabled = true;
+    
+    // create answer options
+    question.options.forEach((option, index) => {
+        const answerDiv = document.createElement('div');
+        answerDiv.className = 'answer-option';
+        answerDiv.textContent = option;
+        answerDiv.setAttribute('data-index', index);
+        
+        answerDiv.addEventListener('click', () => selectAnswer(answerDiv, index));
+        
+        answersContainer.appendChild(answerDiv);
+    });
+}
+
+// handle answer selection
+function selectAnswer(selectedElement, answerIndex) {
+    // Remove previous selection
+    const allAnswers = document.querySelectorAll('.answer-option');
+    allAnswers.forEach(answer => answer.classList.remove('selected'));
+    
+    selectedElement.classList.add('selected');
+    selectedAnswer = answerIndex;
+
+    nextBtn.disabled = false;
+}
+
+function nextQuestion() {
+    const currentQuestion = questions[currentQuestionIndex];
+    
+    // check if answer is correct
+    if (selectedAnswer === currentQuestion.answer) {
+        score++;
+        // console.log(score);
+    }
+    
+    currentQuestionIndex++;
+    
+    // check if quiz is finished
+    if (currentQuestionIndex < questions.length) {
+        displayQuestion();
+    } else {
+        showResults();
+    }
+}
+
+function showResults() {
+    quizScreen.style.display = "none";
+    resultsScreen.style.display = "block";
+    
+    const finalScoreElement = document.getElementById("final-score");
+    finalScoreElement.textContent = score;
+    
+    // display feedback message
+    const feedbackElement = document.getElementById("feedback-message");
+    const percentage = (score / questions.length) * 100;
+    
+    if (percentage >= 80) {
+        feedbackElement.textContent = "Excellent! You have a great understanding of the material.";
+    } else if (percentage >= 60) {
+        feedbackElement.textContent = "Good job! You have a solid grasp of the concepts.";
+    } else if (percentage >= 40) {
+        feedbackElement.textContent = "Not bad! Keep studying to improve your knowledge.";
+    } else {
+        feedbackElement.textContent = "Keep practicing! Review the material and try again.";
+    }
+}
+
+nextBtn.addEventListener("click", nextQuestion);
+
+const restartBtn = document.getElementById("restart-btn");
+if (restartBtn) {
+    restartBtn.addEventListener("click", () => {
+        resultsScreen.style.display = "none";
+        hero.style.display = "flex";
+    });
+}
