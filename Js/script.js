@@ -21,6 +21,7 @@ const resultsScreen = document.getElementById("results-screen");
 const startBtn = document.getElementById("start");
 const startQuizBtn = document.getElementById("start-btn");
 const nextBtn = document.getElementById("next-btn");
+const checkBtn = document.getElementById("check-answer");
 
 // Quiz elements
 const questionText = document.getElementById("question-text");
@@ -43,6 +44,7 @@ startQuizBtn.addEventListener("click", () => {
 let currentQuestionIndex = 0;
 let score = 0;
 let selectedAnswer = null;
+let answerChecked = false;
 
 const questions = [
   {
@@ -188,7 +190,9 @@ function displayQuestion() {
     // clear previous answers
     answersContainer.innerHTML = '';
     selectedAnswer = null;
+    answerChecked = false;
     nextBtn.disabled = true;
+    checkBtn.disabled = true;
     
     // create answer options
     question.options.forEach((option, index) => {
@@ -205,6 +209,10 @@ function displayQuestion() {
 
 // handle answer selection
 function selectAnswer(selectedElement, answerIndex) {
+
+    // only allow selection ila kan answer not checked
+    if (answerChecked) return;
+
     // Remove previous selection
     const allAnswers = document.querySelectorAll('.answer-option');
     allAnswers.forEach(answer => answer.classList.remove('selected'));
@@ -212,18 +220,59 @@ function selectAnswer(selectedElement, answerIndex) {
     selectedElement.classList.add('selected');
     selectedAnswer = answerIndex;
 
+    nextBtn.disabled = true;
+    checkBtn.disabled = false;
+}
+
+function checkAnswer() {
+    if (selectedAnswer === null || answerChecked) return;
+
+    const currentQuestion = questions[currentQuestionIndex];
+    const allAnswers = document.querySelectorAll('.answer-option');
+
+    answerChecked = true; // to prevent further selection
+
+    // green for correct
+    allAnswers[currentQuestion.answer].classList.add('correct');
+
+    if (selectedAnswer !== currentQuestion.answer) {
+        allAnswers[selectedAnswer].classList.add('incorrect');
+    } else {
+        score++;
+    }
+
+    allAnswers.forEach(answer => {
+        answer.style.pointerEvents = "none";
+    });
+
+    checkBtn.disabled = true;
     nextBtn.disabled = false;
 }
 
+checkBtn.addEventListener("click", checkAnswer);
+
+
+// function nextQuestion() {
+//     const currentQuestion = questions[currentQuestionIndex];
+    
+//     // check if answer is correct
+//     if (selectedAnswer === currentQuestion.answer) {
+//         score++;
+//         nextBtn.disabled = false;
+//         // console.log(score);
+//     }
+    
+//     currentQuestionIndex++;
+    
+//     // check if quiz is finished
+//     if (currentQuestionIndex < questions.length) {
+//         displayQuestion();
+//     } else {
+//         showResults();
+//     }
+// }
+
 function nextQuestion() {
-    const currentQuestion = questions[currentQuestionIndex];
-    
-    // check if answer is correct
-    if (selectedAnswer === currentQuestion.answer) {
-        score++;
-        // console.log(score);
-    }
-    
     currentQuestionIndex++;
     
     // check if quiz is finished
