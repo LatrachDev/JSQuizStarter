@@ -465,7 +465,7 @@ const restartBtn = document.getElementById("restart-btn");
 if (restartBtn) {
     restartBtn.addEventListener("click", () => {
         resultsScreen.style.display = "none";
-        hero.style.display = "flex";
+        welcome.style.display = "block";
         
         const errorDiv = document.getElementById('name-error');
         if (errorDiv) {
