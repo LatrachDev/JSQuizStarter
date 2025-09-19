@@ -66,6 +66,7 @@
             maxlength="30"
             autocomplete="name"
           >
+          <div id="name-error" class="error-message"></div>
           <button id="start-btn" class="btn btn-primary" >Start Quiz</button>
         </div>
       </div>
@@ -81,6 +82,7 @@
           Question <span id="current-question">1</span> of <span id="total-questions">12</span>
         </div>
         <h2 id="question-text" class="question-text"></h2>
+        <div id="question-timer" class="question-timer"></div>
         <div id="answers-container" class="answers-container"></div>
         <div class="quiz-actions">
           <button id="check-answer" class="btn btn-primary" disabled>Check Answer</button>

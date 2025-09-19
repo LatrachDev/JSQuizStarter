@@ -31,37 +31,31 @@ const totalQuestionsSpan = document.getElementById("total-questions");
 const progressFill = document.getElementById("progress");
 const userName = document.getElementById("userName");
 
-let game = {
+const errorDiv = document.getElementById("name-error");
+
+let gameStorage = {
   results: [],
   saveResult: function(playerName, score, totalQuestions, percentage, timestamp) {
     const result = {
       name: playerName,
       score: score,
-      toatl: totalQuestions,
+      total: totalQuestions,
       percentage: percentage,
       date: timestamp
     };
     this.results.push(result);
-
-    localStorage.setItem('quizResults', JSON.stringify(this.results));
   },
   getResults: function() {
-    return this.results;
+      return this.results;
   }
-}
+};
 
 startBtn.addEventListener("click", () => {
     hero.style.display = "none";
     welcome.style.display = "flex";
-
-    const savedName = localStorage.getItem('playerName');
-    if (savedName) {
-        userName.value = savedName;
-    }
-    console.log(savedName);
-    
 });
 
+// username validation 
 function validateName() {
     const name = userName.value.trim();
     const errorDiv = document.getElementById('name-error') || createErrorDiv();
@@ -93,10 +87,38 @@ function validateName() {
     return true;
 }
 
+function showNameError(message) {
+    const errorDiv = document.getElementById('name-error') || createErrorDiv();
+    userName.classList.add('error');
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+    userName.focus();
+}
+
+// real-time validation.. clear fach ykon user typing
+userName.addEventListener('input', () => {
+    if (errorDiv && errorDiv.style.display !== 'none') {
+        userName.classList.remove('error');
+        errorDiv.style.display = 'none';
+    }
+});
+
 startQuizBtn.addEventListener("click", () => {
+    if (!validateName()) {
+        return; 
+    }
+    
+    const playerName = userName.value.trim();
+    
     welcome.style.display = "none";
     quizScreen.style.display = "block";
     startQuiz();
+});
+
+userName.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        startQuizBtn.click();
+    }
 });
 
 let currentQuestionIndex = 0;
@@ -104,6 +126,8 @@ let score = 0;
 let selectedAnswer = null;
 let answerChecked = false;
 let startTime;
+let questionTimer = null;
+let timeLeft = 5;
 
 const questions = [
   {
@@ -231,14 +255,12 @@ const questions = [
 function startQuiz() {
     currentQuestionIndex = 0;
     score = 0;
-    startTime = Date.now();
+    startTime = Date.now(); 
     totalQuestionsSpan.textContent = questions.length;
     displayQuestion();
 }
 
 function displayQuestion() {
-
-
     const question = questions[currentQuestionIndex];
     
     // update question number and progress
@@ -267,16 +289,19 @@ function displayQuestion() {
         
         answersContainer.appendChild(answerDiv);
     });
-
+    
+    startQuestionTimer();
 }
 
-// handle answer selection
 function selectAnswer(selectedElement, answerIndex) {
-
-    // only allow selection ila kan answer not checked
+    // only allow selection if answer not checked
     if (answerChecked) return;
 
-    // Remove previous selection
+    // Stop the timer when user selects an answer
+    clearInterval(questionTimer);
+    updateTimerDisplay(0);
+
+    // remove previous selection
     const allAnswers = document.querySelectorAll('.answer-option');
     allAnswers.forEach(answer => answer.classList.remove('selected'));
     
@@ -287,25 +312,30 @@ function selectAnswer(selectedElement, answerIndex) {
     checkBtn.disabled = false;
 }
 
-
-   
 function checkAnswer() {
-    if (selectedAnswer === null || answerChecked) return;
+    if (answerChecked) return;
+
+    // clear timer if it's still running
+    clearInterval(questionTimer);
+    updateTimerDisplay(0);
 
     const currentQuestion = questions[currentQuestionIndex];
     const allAnswers = document.querySelectorAll('.answer-option');
 
     answerChecked = true; // to prevent further selection
 
-    // green for correct
+    // green for correct..
     allAnswers[currentQuestion.answer].classList.add('correct');
 
-    if (selectedAnswer !== currentQuestion.answer) {
+    if (selectedAnswer !== null && selectedAnswer !== currentQuestion.answer) {
         allAnswers[selectedAnswer].classList.add('incorrect');
-    } else {
+    }
+
+    if (selectedAnswer === currentQuestion.answer) {
         score++;
     }
 
+    // Disable all answer options
     allAnswers.forEach(answer => {
         answer.style.pointerEvents = "none";
     });
@@ -315,18 +345,13 @@ function checkAnswer() {
 }
 
 checkBtn.addEventListener("click", checkAnswer);
-  
-
 
 function nextQuestion() {
-
+    // clear any remaining timer
+    clearInterval(questionTimer);
+    
     currentQuestionIndex++;
-
-    // setInterval (()=> 
-    // {
-    //   currentQuestionIndex++;
-    // },3000);
-
+    
     // check if quiz is finished
     if (currentQuestionIndex < questions.length) {
         displayQuestion();
@@ -335,6 +360,55 @@ function nextQuestion() {
     }
 }
 
+// Timer functions
+function startQuestionTimer() {
+    timeLeft = 5;
+    updateTimerDisplay(timeLeft);
+    
+    questionTimer = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay(timeLeft);
+        
+        if (timeLeft <= 0) {
+            clearInterval(questionTimer);
+            handleTimeUp();
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay(seconds) {
+
+    let timerElement = document.getElementById('question-timer');
+    if (!timerElement) {
+        timerElement = document.createElement('div');
+        timerElement.id = 'question-timer';
+        timerElement.className = 'timer-display';
+        
+        const questionContainer = questionText.parentNode;
+        questionContainer.insertBefore(timerElement, questionText.nextSibling);
+    }
+    
+    if (seconds > 0) {
+        timerElement.textContent = `Time left: ${seconds}s`;
+        timerElement.className = 'timer-display' + (seconds <= 2 ? ' timer-warning' : '');
+    } else {
+        timerElement.textContent = 'Time\'s up!';
+        timerElement.className = 'timer-display timer-expired';
+    }
+}
+
+function handleTimeUp() {
+    if (answerChecked) return;
+    
+    selectedAnswer = null; 
+    checkAnswer();
+    
+    const timerElement = document.getElementById('question-timer');
+    if (timerElement) {
+        timerElement.textContent = 'Time\'s up! Correct answer highlighted.';
+        timerElement.className = 'timer-display timer-expired';
+    }
+}
 
 function showResults() {
     quizScreen.style.display = "none";
@@ -348,7 +422,7 @@ function showResults() {
     const percentage = Math.round((score / questions.length) * 100);
     const playerName = userName.value.trim();
     
-    // update time display
+    // time taken
     const finalTimeElement = document.getElementById("final-time");
     if (finalTimeElement) {
         const minutes = Math.floor(timeTaken / 60);
@@ -356,19 +430,19 @@ function showResults() {
         finalTimeElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
     
-    game.saveResult(playerName, score, questions.length, percentage, new Date().toISOString());
+    gameStorage.saveResult(playerName, score, questions.length, percentage, new Date().toISOString());
     
     const feedbackElement = document.getElementById("feedback-message");
     let feedbackMessage = "";
     
     if (percentage >= 80) {
-      feedbackMessage = `Excellent work, ${playerName}! You have a great understanding of the material.`;
+        feedbackMessage = `Excellent work, ${playerName}! You have a great understanding of the material.`;
     } else if (percentage >= 60) {
-      feedbackMessage = `Good job, ${playerName}! You have a solid grasp of the concepts.`;
+        feedbackMessage = `Good job, ${playerName}! You have a solid grasp of the concepts.`;
     } else if (percentage >= 40) {
-      feedbackMessage = `Not bad, ${playerName}! Keep studying to improve your knowledge.`;
+        feedbackMessage = `Not bad, ${playerName}! Keep studying to improve your knowledge.`;
     } else {
-      feedbackMessage = `Keep practicing, ${playerName}! Review the material and try again.`;
+        feedbackMessage = `Keep practicing, ${playerName}! Review the material and try again.`;
     }
     
     feedbackElement.textContent = feedbackMessage;
@@ -381,7 +455,7 @@ function showResults() {
         timeTaken: timeTaken + ' seconds'
     });
     
-    const allResults = game.getResults();
+    const allResults = gameStorage.getResults();
     console.log('All stored results:', allResults);
 }
 
@@ -392,5 +466,19 @@ if (restartBtn) {
     restartBtn.addEventListener("click", () => {
         resultsScreen.style.display = "none";
         hero.style.display = "flex";
+        
+        const errorDiv = document.getElementById('name-error');
+        if (errorDiv) {
+            errorDiv.style.display = 'none';
+        }
+        userName.classList.remove('error');
+    });
+}
+
+function displayStoredResults() {
+    const results = gameStorage.getResults();
+    console.log('=== Stored Quiz Results ===');
+    results.forEach((result, index) => {
+        console.log(`${index + 1}. ${result.name}: ${result.score}/${result.total} (${result.percentage}%) - ${new Date(result.date).toLocaleDateString()}`);
     });
 }
