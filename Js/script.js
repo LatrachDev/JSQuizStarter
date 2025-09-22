@@ -134,6 +134,26 @@ let startTime;
 let questionTimer = null;
 let timeLeft = 5;
 
+let reviewData = [];
+
+function saveAnswer(questionText, correctAnswer, userAnswer) {
+  reviewData.push({
+    question: questionText,
+    correct: correctAnswer,
+    user: userAnswer
+  });
+}
+
+document.getElementById("review-btn").addEventListener("click", () => {
+  showScreen("review-screen"); // function to switch screens
+  renderReview();
+});
+
+document.getElementById("back-to-results").addEventListener("click", () => {
+  showScreen("results-screen");
+});
+
+
 const questions = [
   {
     question: "What does HTML stand for?",
@@ -155,26 +175,26 @@ const questions = [
     ],
     answer: 1
   },
-  // {
-  //   question: "Which JavaScript method is used to write into an alert box?",
-  //   options: [
-  //     "alert()",
-  //     "prompt()",
-  //     "confirm()",
-  //     "message()"
-  //   ],
-  //   answer: 0
-  // },
-  // {
-  //   question: "What is the correct way to create a function in JavaScript?",
-  //   options: [
-  //     "function = myFunction() {}",
-  //     "function myFunction() {}",
-  //     "create myFunction() {}",
-  //     "def myFunction() {}"
-  //   ],
-  //   answer: 1
-  // },
+  {
+    question: "Which JavaScript method is used to write into an alert box?",
+    options: [
+      "alert()",
+      "prompt()",
+      "confirm()",
+      "message()"
+    ],
+    answer: 0
+  },
+  {
+    question: "What is the correct way to create a function in JavaScript?",
+    options: [
+      "function = myFunction() {}",
+      "function myFunction() {}",
+      "create myFunction() {}",
+      "def myFunction() {}"
+    ],
+    answer: 1
+  },
   // {
   //   question: "How do you write 'Hello World' in an alert box?",
   //   options: [
@@ -262,6 +282,10 @@ function startQuiz() {
     score = 0;
     startTime = Date.now(); 
     totalQuestionsSpan.textContent = questions.length;
+
+    reviewData = []; // reset
+
+
     displayQuestion();
 }
 
@@ -339,6 +363,11 @@ function checkAnswer() {
     if (selectedAnswer === currentQuestion.answer) {
         score++;
     }
+
+    // save this question for review
+    const userAnswerText = selectedAnswer !== null ? currentQuestion.options[selectedAnswer] : "No answer";
+    const correctAnswerText = currentQuestion.options[currentQuestion.answer];
+    saveAnswer(currentQuestion.question, correctAnswerText, userAnswerText);
 
     // Disable all answer options
     allAnswers.forEach(answer => {
@@ -486,4 +515,33 @@ function displayStoredResults() {
     results.forEach((result, index) => {
         console.log(`${index + 1}. ${result.name}: ${result.score}/${result.total} (${result.percentage}%) - ${new Date(result.date).toLocaleDateString()}`);
     });
+}
+
+function renderReview() {
+  const container = document.getElementById("review-container");
+  container.innerHTML = "";
+
+  reviewData.forEach((item, index) => {
+    const div = document.createElement("div");
+    div.classList.add("review-item");
+
+    div.innerHTML = `
+      <div class="review-question">Q${index + 1}: ${item.question}</div>
+      <div class="review-answers">
+        <div class="review-answer ${item.user === item.correct ? "user-answer" : "user-incorrect"}">
+          Your answer: ${item.user}
+        </div>
+        <div class="review-answer correct-answer">
+          Correct answer: ${item.correct}
+        </div>
+      </div>
+    `;
+
+    container.appendChild(div);
+  });
+}
+
+function showScreen(screenId) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(screenId).classList.add("active");
 }
