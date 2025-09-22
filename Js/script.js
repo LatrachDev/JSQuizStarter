@@ -498,8 +498,10 @@ nextBtn.addEventListener("click", nextQuestion);
 const restartBtn = document.getElementById("restart-btn");
 if (restartBtn) {
     restartBtn.addEventListener("click", () => {
+        showScreen("welcome-screen");
         resultsScreen.style.display = "none";
         welcome.style.display = "block";
+
         
         const errorDiv = document.getElementById('name-error');
         if (errorDiv) {
