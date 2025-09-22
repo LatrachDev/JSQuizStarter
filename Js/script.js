@@ -44,11 +44,16 @@ let gameStorage = {
       date: timestamp
     };
     this.results.push(result);
+    localStorage.setItem("quizResults", JSON.stringify(this.results)); 
   },
   getResults: function() {
-      return this.results;
+    const stored = localStorage.getItem("quizResults");
+    this.results = stored ? JSON.parse(stored) : [];
+    return this.results;
   }
 };
+
+gameStorage.getResults();
 
 startBtn.addEventListener("click", () => {
     hero.style.display = "none";
