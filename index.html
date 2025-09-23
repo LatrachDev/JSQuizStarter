@@ -41,7 +41,7 @@
 
       <div class="hero-content">
         <h1>Testez et Améliorez <br> vos Connaissances !</h1>
-        <p>Bienvenue sur QuizMaster, votre plateforme de quiz interactifs pour apprendre tout en s’amusant ! 
+        <p>Bienvenue sur JSQuizStarter, votre plateforme de quiz interactifs pour apprendre tout en s’amusant ! 
         Que vous soyez débutant ou expert, plongez dans une variété de quiz couvrant des sujets divers.</p>
 
         <div class="hero-buttons">
@@ -66,6 +66,15 @@
             maxlength="30"
             autocomplete="name"
           >
+          <select 
+            id="category" 
+            class="name-input"
+            required
+          >
+            <option value="" disabled selected>Select quiz category...</option>
+            <option value="frontend">Frontend</option>
+            <option value="backend">Backend</option>
+          </select>
           <div id="name-error" class="error-message"></div>
           <button id="start-btn" class="btn btn-primary" >Start Quiz</button>
         </div>
@@ -127,6 +136,7 @@
 
   </div>
 
+  <script src="Js/quiz.js"></script>
   <script src="Js/script.js"></script>
 </body>
 </html>
