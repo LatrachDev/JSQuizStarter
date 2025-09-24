@@ -311,21 +311,46 @@ function displayQuestion() {
     
     // clear previous answers
     answersContainer.innerHTML = '';
-    selectedAnswer = null;
+    selectedAnswer = [];
     answerChecked = false;
     nextBtn.disabled = true;
     checkBtn.disabled = true;
+
+    // choose input type
+    const inputType = question.multiSelect ? "checkbox" : "radio";
     
     // create answer options
     question.options.forEach((option, index) => {
-        const answerDiv = document.createElement('div');
-        answerDiv.className = 'answer-option';
-        answerDiv.textContent = option;
-        answerDiv.setAttribute('data-index', index);
+        // const answerDiv = document.createElement('div');
+        // answerDiv.className = 'answer-option';
+        // answerDiv.textContent = option;
+        // answerDiv.setAttribute('data-index', index);
+
+        const label = document.createElement("label");
+        label.className = "answer-option";
+
+        const input = document.createElement("input");
+        input.type = inputType;
+        input.name = "answer";
+        input.value = index;
         
-        answerDiv.addEventListener('click', () => selectAnswer(answerDiv, index));
+        input.addEventListener("change", () => {
+            if (question.multiSelect) {
+                selectedAnswer = Array.from(
+                    answersContainer.querySelectorAll("input:checked")
+                ).map(el => parseInt(el.value));
+            } else {
+                selectedAnswer = [parseInt(input.value)];
+            }
+            checkBtn.disabled = selectedAnswer.length === 0;
+        });
+
+        label.appendChild(input);
+        label.append(" " + option);
+        answersContainer.appendChild(label);
+        // answerDiv.addEventListener('click', () => selectAnswer(answerDiv, index));
         
-        answersContainer.appendChild(answerDiv);
+        // answersContainer.appendChild(answerDiv);
     });
     
     startQuestionTimer();
@@ -350,42 +375,86 @@ function selectAnswer(selectedElement, answerIndex) {
     checkBtn.disabled = false;
 }
 
+// function checkAnswer() {
+//     if (answerChecked) return;
+
+//     // clear timer if it's still running
+//     clearInterval(questionTimer);
+//     updateTimerDisplay(0);
+
+//     const currentQuestion = questions[currentQuestionIndex];
+//     const allAnswers = document.querySelectorAll('.answer-option');
+
+//     answerChecked = true; // to prevent further selection
+
+//     // green for correct..
+//     allAnswers[currentQuestion.answer].classList.add('correct');
+
+//     if (selectedAnswer !== null && selectedAnswer !== currentQuestion.answer) {
+//         allAnswers[selectedAnswer].classList.add('incorrect');
+//     }
+
+//     if (selectedAnswer === currentQuestion.answer) {
+//         score++;
+//     }
+
+//     // save this question for review
+//     const userAnswerText = selectedAnswer !== null ? currentQuestion.options[selectedAnswer] : "No answer";
+//     const correctAnswerText = currentQuestion.options[currentQuestion.answer];
+//     saveAnswer(currentQuestion.question, correctAnswerText, userAnswerText);
+
+//     // Disable all answer options
+//     allAnswers.forEach(answer => {
+//         answer.style.pointerEvents = "none";
+//     });
+
+//     checkBtn.disabled = true;
+//     nextBtn.disabled = false;
+// }
 function checkAnswer() {
     if (answerChecked) return;
 
-    // clear timer if it's still running
     clearInterval(questionTimer);
     updateTimerDisplay(0);
 
     const currentQuestion = questions[currentQuestionIndex];
-    const allAnswers = document.querySelectorAll('.answer-option');
+    const correctAnswers = currentQuestion.answer; // array
+    const allInputs = answersContainer.querySelectorAll("input");
 
-    answerChecked = true; // to prevent further selection
+    answerChecked = true;
 
-    // green for correct..
-    allAnswers[currentQuestion.answer].classList.add('correct');
-
-    if (selectedAnswer !== null && selectedAnswer !== currentQuestion.answer) {
-        allAnswers[selectedAnswer].classList.add('incorrect');
-    }
-
-    if (selectedAnswer === currentQuestion.answer) {
-        score++;
-    }
-
-    // save this question for review
-    const userAnswerText = selectedAnswer !== null ? currentQuestion.options[selectedAnswer] : "No answer";
-    const correctAnswerText = currentQuestion.options[currentQuestion.answer];
-    saveAnswer(currentQuestion.question, correctAnswerText, userAnswerText);
-
-    // Disable all answer options
-    allAnswers.forEach(answer => {
-        answer.style.pointerEvents = "none";
+    allInputs.forEach((input, i) => {
+        const label = input.parentElement;
+        if (correctAnswers.includes(i)) {
+            label.classList.add("correct");
+        }
+        if (selectedAnswer.includes(i) && !correctAnswers.includes(i)) {
+            label.classList.add("incorrect");
+        }
+        input.disabled = true;
     });
+
+    // check correctness
+    const isCorrect =
+        selectedAnswer.length === correctAnswers.length &&
+        selectedAnswer.every(idx => correctAnswers.includes(idx));
+
+    if (isCorrect) score++;
+
+    const userAnswerText =
+      selectedAnswer.length > 0
+        ? selectedAnswer.map(i => currentQuestion.options[i]).join(", ")
+        : "No answer";
+
+    const correctAnswerText =
+      correctAnswers.map(i => currentQuestion.options[i]).join(", ");
+
+    saveAnswer(currentQuestion.question, correctAnswerText, userAnswerText);
 
     checkBtn.disabled = true;
     nextBtn.disabled = false;
 }
+
 
 checkBtn.addEventListener("click", checkAnswer);
 
@@ -440,18 +509,56 @@ function updateTimerDisplay(seconds) {
     }
 }
 
+// function handleTimeUp() {
+//     if (answerChecked) return;
+    
+//     selectedAnswer = null; 
+//     checkAnswer();
+    
+//     const timerElement = document.getElementById('question-timer');
+//     if (timerElement) {
+//         timerElement.textContent = 'Time\'s up! Correct answer highlighted.';
+//         timerElement.className = 'timer-display timer-expired';
+//     }
+// }
 function handleTimeUp() {
     if (answerChecked) return;
-    
-    selectedAnswer = null; 
-    checkAnswer();
-    
+
+    clearInterval(questionTimer);
+    updateTimerDisplay(0);
+
+    const currentQuestion = questions[currentQuestionIndex];
+    const correctAnswers = currentQuestion.answer; // array
+    const allInputs = answersContainer.querySelectorAll("input");
+
+    answerChecked = true;
+
+    allInputs.forEach((input, i) => {
+        const label = input.parentElement;
+        if (correctAnswers.includes(i)) {
+            label.classList.add("correct");
+        } else {
+            label.classList.add("incorrect");
+        }
+        input.disabled = true; 
+    });
+
+    // save as "No answer"
+    const correctAnswerText =
+      correctAnswers.map(i => currentQuestion.options[i]).join(", ");
+    saveAnswer(currentQuestion.question, correctAnswerText, "No answer");
+
+    // allow going to next question
+    checkBtn.disabled = true;
+    nextBtn.disabled = false;
+
     const timerElement = document.getElementById('question-timer');
     if (timerElement) {
         timerElement.textContent = 'Time\'s up! Correct answer highlighted.';
         timerElement.className = 'timer-display timer-expired';
     }
 }
+
 
 function showResults() {
     quizScreen.style.display = "none";
