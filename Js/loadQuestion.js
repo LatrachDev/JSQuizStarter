@@ -1,7 +1,9 @@
-let questions = [];
+import { startQuiz } from './script.js';
+
+export let questions = [];
 let categorySelected = "";
 
-async function loadQuestions(category) {
+export async function loadQuestions(category) {
     console.log('dkhlna hna');
     
     const result = await fetch('./questions.json');

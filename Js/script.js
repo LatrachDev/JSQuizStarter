@@ -1,3 +1,6 @@
+import { getInputType, handleAnswerChange, isCorrectAnswer } from "./multiselect.js";
+import { loadQuestions, questions } from './loadQuestion.js';
+
 // Menu toggle functionality
 const menu = document.getElementById("menu-toggle");
 const nav = document.getElementById("nav-menu");
@@ -286,7 +289,7 @@ document.getElementById("back-to-results").addEventListener("click", () => {
 // ];
 
 
-function startQuiz() {
+export function startQuiz() {
     currentQuestionIndex = 0;
     score = 0;
     startTime = Date.now(); 
@@ -317,7 +320,9 @@ function displayQuestion() {
     checkBtn.disabled = true;
 
     // choose input type
-    const inputType = question.multiSelect ? "checkbox" : "radio";
+    // const inputType = question.multiSelect ? "checkbox" : "radio";
+    const inputType = getInputType(question);
+
     
     // create answer options
     question.options.forEach((option, index) => {
@@ -335,15 +340,19 @@ function displayQuestion() {
         input.value = index;
         
         input.addEventListener("change", () => {
-            if (question.multiSelect) {
-                selectedAnswer = Array.from(
-                    answersContainer.querySelectorAll("input:checked")
-                ).map(el => parseInt(el.value));
-            } else {
-                selectedAnswer = [parseInt(input.value)];
-            }
-            checkBtn.disabled = selectedAnswer.length === 0;
+          handleAnswerChange(answersContainer, input, question, checkBtn, { value: selectedAnswer });
         });
+        
+        // input.addEventListener("change", () => {
+        //     if (question.multiSelect) {
+        //         selectedAnswer = Array.from(
+        //             answersContainer.querySelectorAll("input:checked")
+        //         ).map(el => parseInt(el.value));
+        //     } else {
+        //         selectedAnswer = [parseInt(input.value)];
+        //     }
+        //     checkBtn.disabled = selectedAnswer.length === 0;
+        // });
 
         label.appendChild(input);
         label.append(" " + option);
@@ -427,19 +436,25 @@ function checkAnswer() {
         const label = input.parentElement;
         if (correctAnswers.includes(i)) {
             label.classList.add("correct");
-        }
-        if (selectedAnswer.includes(i) && !correctAnswers.includes(i)) {
+            console.log("answer is correct");
+            
+          }
+          if (selectedAnswer.includes(i) && !correctAnswers.includes(i)) {
             label.classList.add("incorrect");
+            console.log("answer is incorrect");
         }
         input.disabled = true;
     });
 
     // check correctness
-    const isCorrect =
-        selectedAnswer.length === correctAnswers.length &&
-        selectedAnswer.every(idx => correctAnswers.includes(idx));
+    // const isCorrect =
+    //     selectedAnswer.length === correctAnswers.length &&
+    //     selectedAnswer.every(idx => correctAnswers.includes(idx));
+    const isCorrect = isCorrectAnswer(selectedAnswer, correctAnswers);
 
     if (isCorrect) score++;
+    
+    console.log("score :", score);
 
     const userAnswerText =
       selectedAnswer.length > 0
