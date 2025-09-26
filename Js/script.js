@@ -164,131 +164,6 @@ document.getElementById("back-to-results").addEventListener("click", () => {
   showScreen("results-screen");
 });
 
-
-// const questions = [
-//   {
-//     question: "What does HTML stand for?",
-//     options: [
-//       "Hyper Text Markup Language",
-//       "Home Tool Markup Language",
-//       "Hyperlinks and Text Markup Language",
-//       "Hyper Tool Multi Language"
-//     ],
-//     answer: 0
-//   },
-//   {
-//     question: "What does CSS stand for?",
-//     options: [
-//       "Creative Style Sheets",
-//       "Cascading Style Sheets",
-//       "Computer Style Sheets",
-//       "Colorful Style Sheets"
-//     ],
-//     answer: 1
-//   },
-//   {
-//     question: "Which JavaScript method is used to write into an alert box?",
-//     options: [
-//       "alert()",
-//       "prompt()",
-//       "confirm()",
-//       "message()"
-//     ],
-//     answer: 0
-//   },
-//   {
-//     question: "What is the correct way to create a function in JavaScript?",
-//     options: [
-//       "function = myFunction() {}",
-//       "function myFunction() {}",
-//       "create myFunction() {}",
-//       "def myFunction() {}"
-//     ],
-//     answer: 1
-//   },
-//   {
-//     question: "How do you write 'Hello World' in an alert box?",
-//     options: [
-//       "alertBox('Hello World');",
-//       "alert('Hello World');",
-//       "msg('Hello World');",
-//       "popup('Hello World');"
-//     ],
-//     answer: 1
-//   },
-//   {
-//     question: "Which event occurs when the user clicks on an HTML element?",
-//     options: [
-//       "onchange",
-//       "onclick",
-//       "onmouseclick",
-//       "onmouseover"
-//     ],
-//     answer: 1
-//   },
-//   {
-//     question: "How do you declare a JavaScript variable?",
-//     options: [
-//       "variable carName;",
-//       "v carName;",
-//       "var carName;",
-//       "declare carName;"
-//     ],
-//     answer: 2
-//   },
-//   {
-//     question: "Which operator is used to assign a value to a variable?",
-//     options: [
-//       "*",
-//       "=",
-//       "x",
-//       "-"
-//     ],
-//     answer: 1
-//   },
-//   {
-//     question: "What will the following code return: Boolean(10 > 9)",
-//     options: [
-//       "true",
-//       "false",
-//       "NaN",
-//       "undefined"
-//     ],
-//     answer: 0
-//   },
-//   {
-//     question: "How can you add a comment in JavaScript?",
-//     options: [
-//       "'This is a comment",
-//       "<!--This is a comment-->",
-//       "//This is a comment",
-//       "/*This is a comment*/"
-//     ],
-//     answer: 2
-//   },
-//   {
-//     question: "What is the correct way to write a JavaScript array?",
-//     options: [
-//       "var colors = 'red', 'green', 'blue'",
-//       "var colors = (1:'red', 2:'green', 3:'blue')",
-//       "var colors = ['red', 'green', 'blue']",
-//       "var colors = 1 = ('red'), 2 = ('green'), 3 = ('blue')"
-//     ],
-//     answer: 2
-//   },
-//   {
-//     question: "How do you round the number 7.25 to the nearest integer?",
-//     options: [
-//       "Math.round(7.25)",
-//       "round(7.25)",
-//       "Math.rnd(7.25)",
-//       "rnd(7.25)"
-//     ],
-//     answer: 0
-//   }
-// ];
-
-
 export function startQuiz() {
     currentQuestionIndex = 0;
     score = 0;
@@ -301,8 +176,11 @@ export function startQuiz() {
     displayQuestion();
 }
 
+let selectedAnswerRef = { value: [] };
+
 function displayQuestion() {
     const question = questions[currentQuestionIndex];
+    selectedAnswerRef = { value: [] };
     
     // update question number and progress
     currentQuestionSpan.textContent = currentQuestionIndex + 1;
@@ -320,16 +198,11 @@ function displayQuestion() {
     checkBtn.disabled = true;
 
     // choose input type
-    // const inputType = question.multiSelect ? "checkbox" : "radio";
     const inputType = getInputType(question);
 
     
     // create answer options
     question.options.forEach((option, index) => {
-        // const answerDiv = document.createElement('div');
-        // answerDiv.className = 'answer-option';
-        // answerDiv.textContent = option;
-        // answerDiv.setAttribute('data-index', index);
 
         const label = document.createElement("label");
         label.className = "answer-option";
@@ -340,26 +213,13 @@ function displayQuestion() {
         input.value = index;
         
         input.addEventListener("change", () => {
-          handleAnswerChange(answersContainer, input, question, checkBtn, { value: selectedAnswer });
+          handleAnswerChange(answersContainer, input, question, checkBtn, selectedAnswerRef);
         });
-        
-        // input.addEventListener("change", () => {
-        //     if (question.multiSelect) {
-        //         selectedAnswer = Array.from(
-        //             answersContainer.querySelectorAll("input:checked")
-        //         ).map(el => parseInt(el.value));
-        //     } else {
-        //         selectedAnswer = [parseInt(input.value)];
-        //     }
-        //     checkBtn.disabled = selectedAnswer.length === 0;
-        // });
 
         label.appendChild(input);
         label.append(" " + option);
         answersContainer.appendChild(label);
-        // answerDiv.addEventListener('click', () => selectAnswer(answerDiv, index));
-        
-        // answersContainer.appendChild(answerDiv);
+
     });
     
     startQuestionTimer();
@@ -384,42 +244,6 @@ function selectAnswer(selectedElement, answerIndex) {
     checkBtn.disabled = false;
 }
 
-// function checkAnswer() {
-//     if (answerChecked) return;
-
-//     // clear timer if it's still running
-//     clearInterval(questionTimer);
-//     updateTimerDisplay(0);
-
-//     const currentQuestion = questions[currentQuestionIndex];
-//     const allAnswers = document.querySelectorAll('.answer-option');
-
-//     answerChecked = true; // to prevent further selection
-
-//     // green for correct..
-//     allAnswers[currentQuestion.answer].classList.add('correct');
-
-//     if (selectedAnswer !== null && selectedAnswer !== currentQuestion.answer) {
-//         allAnswers[selectedAnswer].classList.add('incorrect');
-//     }
-
-//     if (selectedAnswer === currentQuestion.answer) {
-//         score++;
-//     }
-
-//     // save this question for review
-//     const userAnswerText = selectedAnswer !== null ? currentQuestion.options[selectedAnswer] : "No answer";
-//     const correctAnswerText = currentQuestion.options[currentQuestion.answer];
-//     saveAnswer(currentQuestion.question, correctAnswerText, userAnswerText);
-
-//     // Disable all answer options
-//     allAnswers.forEach(answer => {
-//         answer.style.pointerEvents = "none";
-//     });
-
-//     checkBtn.disabled = true;
-//     nextBtn.disabled = false;
-// }
 function checkAnswer() {
     if (answerChecked) return;
 
@@ -427,7 +251,8 @@ function checkAnswer() {
     updateTimerDisplay(0);
 
     const currentQuestion = questions[currentQuestionIndex];
-    const correctAnswers = currentQuestion.answer; // array
+    const correctAnswers = currentQuestion.answer; 
+
     const allInputs = answersContainer.querySelectorAll("input");
 
     answerChecked = true;
@@ -436,33 +261,27 @@ function checkAnswer() {
         const label = input.parentElement;
         if (correctAnswers.includes(i)) {
             label.classList.add("correct");
-            console.log("answer is correct");
-            
-          }
-          if (selectedAnswer.includes(i) && !correctAnswers.includes(i)) {
+        }
+        if (selectedAnswerRef.value.includes(i) && !correctAnswers.includes(i)) {
             label.classList.add("incorrect");
-            console.log("answer is incorrect");
         }
         input.disabled = true;
     });
 
-    // check correctness
-    // const isCorrect =
-    //     selectedAnswer.length === correctAnswers.length &&
-    //     selectedAnswer.every(idx => correctAnswers.includes(idx));
-    const isCorrect = isCorrectAnswer(selectedAnswer, correctAnswers);
+    const isCorrect = isCorrectAnswer(selectedAnswerRef.value, correctAnswers);
 
-    if (isCorrect) score++;
-    
-    console.log("score :", score);
+    if (isCorrect) {
+        score++;
+        document.getElementById("score").textContent = score;
+    }
 
     const userAnswerText =
-      selectedAnswer.length > 0
-        ? selectedAnswer.map(i => currentQuestion.options[i]).join(", ")
-        : "No answer";
+        selectedAnswerRef.value.length > 0
+            ? selectedAnswerRef.value.map(i => currentQuestion.options[i]).join(", ")
+            : "No answer";
 
     const correctAnswerText =
-      correctAnswers.map(i => currentQuestion.options[i]).join(", ");
+        correctAnswers.map(i => currentQuestion.options[i]).join(", ");
 
     saveAnswer(currentQuestion.question, correctAnswerText, userAnswerText);
 
@@ -524,18 +343,6 @@ function updateTimerDisplay(seconds) {
     }
 }
 
-// function handleTimeUp() {
-//     if (answerChecked) return;
-    
-//     selectedAnswer = null; 
-//     checkAnswer();
-    
-//     const timerElement = document.getElementById('question-timer');
-//     if (timerElement) {
-//         timerElement.textContent = 'Time\'s up! Correct answer highlighted.';
-//         timerElement.className = 'timer-display timer-expired';
-//     }
-// }
 function handleTimeUp() {
     if (answerChecked) return;
 
