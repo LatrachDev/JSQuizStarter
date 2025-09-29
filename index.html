@@ -28,6 +28,7 @@
 
         <div class="header-actions">
           <button class="btn premium-btn">Premium</button>
+          <button id="dashboard-btn" class="btn dashboard-btn">Dashboard</button>
           <button id="menu-toggle" class="menu-toggle">
             ☰
           </button>
@@ -134,8 +135,15 @@
       </div>
     </div>
 
+    <section id="dashboard-screen" class="screen">
+      <h2>Statistics Dashboard</h2>
+      <canvas id="userStatsChart" width="400" height="200"></canvas>
+    </section>
+
 
   </div>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 
   <script type="module" src="Js/loadQuestion.js"></script>
   <script type="module" src="Js/multiselect.js"></script>

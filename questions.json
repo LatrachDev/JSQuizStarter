@@ -149,7 +149,7 @@
             "To process requests before reaching routes",
             "To install packages"
         ],
-        "answer": 2,
+        "answer": [2],
         "multiSelect": false
     }
   ]

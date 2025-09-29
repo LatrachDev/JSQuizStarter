@@ -1,6 +1,6 @@
 * {
   margin: 0;
-  padding: 2px;
+  padding: 0;
   box-sizing: border-box;
 }
 
@@ -701,4 +701,28 @@ select.name-input:invalid {
     height: 100px;
     font-size: 1.3rem;
   }
+}
+
+#dashboard-screen {
+  display: none;
+  padding: 2rem;
+  text-align: center;
+}
+
+#dashboard-screen.active {
+  display: block;
+}
+
+#userStatsChart {
+  max-width: 800px;
+  margin: 2rem auto;
+  height: 400px; 
+}
+
+.dashboard-btn {
+  display: none;
+}
+
+.dashboard-btn.show {
+  display: block;
 }

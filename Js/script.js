@@ -1,5 +1,6 @@
 import { getInputType, handleAnswerChange, isCorrectAnswer } from "./multiselect.js";
 import { loadQuestions, questions } from './loadQuestion.js';
+import { renderUserStatsChart } from "./chart.js";
 
 // Menu toggle functionality
 const menu = document.getElementById("menu-toggle");
@@ -19,6 +20,27 @@ const welcome = document.getElementById("welcome");
 const welcomeScreen = document.getElementById("welcome-screen");
 const quizScreen = document.getElementById("quiz-screen");
 const resultsScreen = document.getElementById("results-screen");
+const dashboardScreen = document.getElementById("dashboard-screen");
+
+const dashboardBtn = document.getElementById("dashboard-btn");
+let dashboardChart = null;
+
+dashboardBtn.addEventListener("click", () => {
+  showScreen("dashboard-screen");
+
+  // Add delay to ensure screen is visible before rendering chart
+  setTimeout(() => {
+    const quizData = JSON.parse(localStorage.getItem("quizResults")) || [];
+    const ctx = document.getElementById("userStatsChart").getContext("2d");
+
+    // Destroy old chart instance to avoid duplicates
+    if (dashboardChart) {
+      dashboardChart.destroy();
+    }
+
+    dashboardChart = renderUserStatsChart(ctx, quizData);
+  }, 100);
+});
 
 // buttons
 const startBtn = document.getElementById("start");
@@ -114,7 +136,6 @@ userName.addEventListener('input', () => {
 startQuizBtn.addEventListener("click", () => {
     if (!validateName()) return; 
     
-    
     const playerName = userName.value.trim();
     const categorySelected = document.getElementById("category");
     const category = categorySelected.value;
@@ -123,11 +144,9 @@ startQuizBtn.addEventListener("click", () => {
         showNameError('Category is required !')
         return;
     }
-
     
     welcome.style.display = "none";
     quizScreen.style.display = "block";
-    // startQuiz();
     loadQuestions(category);
 });
 
@@ -156,7 +175,7 @@ function saveAnswer(questionText, correctAnswer, userAnswer) {
 }
 
 document.getElementById("review-btn").addEventListener("click", () => {
-  showScreen("review-screen"); // function to switch screens
+  showScreen("review-screen");
   renderReview();
 });
 
@@ -171,7 +190,6 @@ export function startQuiz() {
     totalQuestionsSpan.textContent = questions.length;
 
     reviewData = []; // reset
-
 
     displayQuestion();
 }
@@ -200,10 +218,8 @@ function displayQuestion() {
     // choose input type
     const inputType = getInputType(question);
 
-    
     // create answer options
     question.options.forEach((option, index) => {
-
         const label = document.createElement("label");
         label.className = "answer-option";
 
@@ -219,7 +235,6 @@ function displayQuestion() {
         label.appendChild(input);
         label.append(" " + option);
         answersContainer.appendChild(label);
-
     });
     
     startQuestionTimer();
@@ -289,7 +304,6 @@ function checkAnswer() {
     nextBtn.disabled = false;
 }
 
-
 checkBtn.addEventListener("click", checkAnswer);
 
 function nextQuestion() {
@@ -323,7 +337,6 @@ function startQuestionTimer() {
 }
 
 function updateTimerDisplay(seconds) {
-
     let timerElement = document.getElementById('question-timer');
     if (!timerElement) {
         timerElement = document.createElement('div');
@@ -350,7 +363,7 @@ function handleTimeUp() {
     updateTimerDisplay(0);
 
     const currentQuestion = questions[currentQuestionIndex];
-    const correctAnswers = currentQuestion.answer; // array
+    const correctAnswers = currentQuestion.answer;
     const allInputs = answersContainer.querySelectorAll("input");
 
     answerChecked = true;
@@ -381,7 +394,6 @@ function handleTimeUp() {
     }
 }
 
-
 function showResults() {
     quizScreen.style.display = "none";
     resultsScreen.style.display = "block";
@@ -403,6 +415,9 @@ function showResults() {
     }
     
     gameStorage.saveResult(playerName, score, questions.length, percentage, new Date().toISOString());
+    
+    // Show dashboard button after first quiz completion
+    document.getElementById("dashboard-btn").classList.add("show");
     
     const feedbackElement = document.getElementById("feedback-message");
     let feedbackMessage = "";
@@ -440,7 +455,6 @@ if (restartBtn) {
         resultsScreen.style.display = "none";
         welcome.style.display = "block";
 
-        
         const errorDiv = document.getElementById('name-error');
         if (errorDiv) {
             errorDiv.style.display = 'none';
@@ -485,3 +499,4 @@ function showScreen(screenId) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   document.getElementById(screenId).classList.add("active");
 }
+
